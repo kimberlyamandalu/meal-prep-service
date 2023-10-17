@@ -16,7 +16,7 @@ jest.mock('../../../services/meal-prep/src/helpers/dynamo')
 jest.mock('../../../services/meal-prep/src/helpers/response')
 
 const TableName = process.env.DYNAMODB_TABLE
-const keySchema = {"PK":"orderId","SK":"orderItemId"}
+const keySchema = {"PK":"orderId","SK":"orderLineId"}
 describe('Test getItemById handler', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()

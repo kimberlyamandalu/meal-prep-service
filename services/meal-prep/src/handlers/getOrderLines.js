@@ -4,7 +4,7 @@ const TableName = process.env.DYNAMODB_TABLE;
 
 const handler = async (event) => {
     try {
-        const keySchema = {"PK":"orderId","SK":"orderItemId"};
+        const keySchema = {"PK":"orderId","SK":"orderLineId"};
         if (event.requestContext.authorizer) {
             // set primary key value equal to cognito id
             keySchema.PKV = event.requestContext.authorizer.claims.sub;
