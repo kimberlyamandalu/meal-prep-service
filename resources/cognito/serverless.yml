@@ -1,0 +1,63 @@
+service: ${self:custom.defaults.service}-cognito
+frameworkVersion: ${self:custom.defaults.version}
+provider:
+  name: aws
+  stage: ${self:custom.defaults.stage}
+  region: ${self:custom.defaults.region}
+  deploymentBucket:
+    name: ${self:custom.defaults.service}-${self:provider.region}-${aws:accountId}
+    serverSideEncryption: AES256
+custom:
+  base: ${self:service}-${self:provider.stage}
+  defaults: ${file(../../defaults/cloudgto.yml):defaults}
+plugins:
+  - serverless-deployment-bucket
+resources:
+  Resources:
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:custom.base}-mealsCognito
+        AutoVerifiedAttributes:
+          - email
+        UsernameAttributes:
+          - email
+        Schema:
+          - AttributeDataType: String
+            Name: email
+            Required: true
+            Mutable: false
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+        UserPoolTags:
+          service: ${self:service}
+          source: cloudgto
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:custom.base}-client
+        GenerateSecret: false
+        RefreshTokenValidity: 1
+        UserPoolId:
+          Ref: UserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+  Outputs:
+    UserPoolId:
+      Value:
+        Ref: UserPool
+    UserPoolArn:
+      Value:
+        Fn::GetAtt:
+          - UserPool
+          - Arn
+    UserPoolClientId:
+      Value:
+        Ref: UserPoolClient

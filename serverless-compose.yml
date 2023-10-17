@@ -1,0 +1,21 @@
+services:
+  api:
+    path: resources/api
+    params:
+      COGNITO_ARN: ${mealsCognito.UserPoolArn}
+  mealsCognito:
+    path: resources/cognito
+  mealOrders:
+    path: resources/dynamodb/mealOrders
+  mealsMenu:
+    path: resources/dynamodb/mealsMenu
+  meal-prep:
+    params:
+      API_GATEWAY_REST_API_ID: ${api.ApiId}
+      API_GATEWAY_REST_API_ROOT_RESOURCE_ID: ${api.ApiResourceId}
+      USER_POOL_ID: ${mealsCognito.UserPoolId}
+      USER_POOL_CLIENT_ID: ${mealsCognito.UserPoolClientId}
+      AUTHORIZER_ID: ${api.AuthorizerId}
+      DYNAMODB_TABLE_MEALORDERS: ${mealOrders.DynamoDBTableName}
+      DYNAMODB_TABLE_MEALSMENU: ${mealsMenu.DynamoDBTableName}
+    path: services/meal-prep

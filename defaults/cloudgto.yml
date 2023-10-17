@@ -1,0 +1,9 @@
+defaults:
+  service: meal-prep
+  stage: dev
+  region: us-east-2
+  lambda:
+    timeout: 30
+    memorySize: 1024
+    runtime: nodejs16.x
+  version: "3"
