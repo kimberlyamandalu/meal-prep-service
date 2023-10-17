@@ -43,13 +43,13 @@ then
 fi
     
 # use AWS CLI to pull in cloudformation outputs (uses default ~/.aws/credentials profile)
-cognito_client_id=$(aws cloudformation --region $region describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
-user_pool_id=$(aws cloudformation --region $region describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
+cognito_client_id=$(aws cloudformation --profile ${AWS_PROFILE} --region $region describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
+user_pool_id=$(aws cloudformation --profile ${AWS_PROFILE} --region $region describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
             
 # based on action passed handle related cognito action
 if [[ $action == "signup" ]]
 then
-    aws cognito-idp sign-up --region $region --client-id $cognito_client_id --username $email --password $pw && aws cognito-idp admin-confirm-sign-up --region $region --user-pool-id $user_pool_id --username $email
+    aws cognito-idp sign-up --region $region --client-id $cognito_client_id --username $email --password $pw && aws cognito-idp admin-confirm-sign-up --profile ${AWS_PROFILE} --region $region --user-pool-id $user_pool_id --username $email
     echo "$email signed up"
 elif [[ $action == "signin" ]]
 then
@@ -59,7 +59,7 @@ then
         echo 'Error: jq is not installed. Please install first, if on Mac, brew install jq.' >&2
         exit 1
     fi
-    signin_result=$(aws cognito-idp initiate-auth --region $region --auth-flow USER_PASSWORD_AUTH --output json --client-id $cognito_client_id --auth-parameters USERNAME=$email,PASSWORD=$pw)
+    signin_result=$(aws cognito-idp initiate-auth --profile ${AWS_PROFILE} --region $region --auth-flow USER_PASSWORD_AUTH --output json --client-id $cognito_client_id --auth-parameters USERNAME=$email,PASSWORD=$pw)
     if [[ $signin_result ]];
     then
         echo "$email signed in"
