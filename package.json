@@ -34,6 +34,7 @@
 		"webpack": "*"
 	},
 	"dependencies": {
+		"@aws-lambda-powertools/logger": "^1.14.0",
 		"crypto": "*"
 	},
 	"keywords": [],
