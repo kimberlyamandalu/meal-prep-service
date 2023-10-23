@@ -9,9 +9,9 @@
 		"auth": "npx cross-env AWS_PROFILE=dev bash ./scripts/auth.bash",
 		"format": "prettier --write .",
 		"getJWT": "npx cross-env AWS_PROFILE=dev npm run auth dev us-east-2 signup && npm run auth dev us-east-2 signin",
-		"getAPIKey": "npx cross-env AWS_PROFILE=dev aws apigateway get-api-keys --name-query monolith-rest-api-dev-api-key --region us-east-2 --include-values --query 'items[0].value' --output text",
-		"test": "jest",
-		"test:coverage": "jest --coverage"
+		"getAPIKey": "npx cross-env AWS_PROFILE=dev aws apigateway get-api-keys --name-query meal-prep-api-dev-api-key --region us-east-2 --include-values --query 'items[0].value' --output text",
+		"test": "npx cross-env POWERTOOLS_DEV=true jest",
+		"test:coverage": "npx cross-env POWERTOOLS_DEV=true jest --coverage"
 	},
 	"devDependencies": {
 		"@aws-sdk/client-dynamodb": "^3.341.0",
@@ -35,7 +35,7 @@
 	},
 	"dependencies": {
 		"@aws-lambda-powertools/logger": "^1.14.0",
-		"crypto": "*"
+		"@middy/core": "^4.6.5"
 	},
 	"keywords": [],
 	"author": "",
