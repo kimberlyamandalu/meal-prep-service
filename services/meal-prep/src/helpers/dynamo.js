@@ -14,7 +14,8 @@ const {
     GetCommand,
     DeleteCommand,
     ScanCommand,
-    QueryCommand
+    QueryCommand,
+    UpdateCommand
 } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({});
@@ -46,9 +47,16 @@ const deleteTable = async (TableName) =>
 const putItem = async (TableName, Item) =>
     await ddbDocClient.send(new PutCommand({ TableName, Item }));
 
+// https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/classes/_aws_sdk_lib_dynamodb.UpdateCommand.html
+const updateItem = async (TableName, Item, updateExpression, expressionAttributeNames, expressionAttributeValues) =>
+    await ddbDocClient.send(new UpdateCommand({ TableName, Item, updateExpression, expressionAttributeNames, expressionAttributeValues }));
+
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/classes/_aws_sdk_lib_dynamodb.GetCommand.html
 const getItem = async (TableName, Key) =>
     await ddbDocClient.send(new GetCommand({ TableName, Key }));
+
+const getItemsByPartitionKey = async (TableName, keyConditionExpression,  expressionAttributeValues) =>
+    await ddbDocClient.send(new QueryCommand({ TableName, keyConditionExpression, expressionAttributeValues }));
 
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/classes/_aws_sdk_lib_dynamodb.QueryCommand.html
 const queryItemByIndex = async (query) =>
@@ -78,7 +86,9 @@ module.exports = {
     waitUntil,
     putItem,
     getItem,
+    getItemsByPartitionKey,
     scan,
     queryItemByIndex,
-    deleteItem
+    deleteItem,
+    updateItem
 };
