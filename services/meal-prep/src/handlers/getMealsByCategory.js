@@ -1,33 +1,38 @@
-const { getItem } = require("../helpers/dynamo");
+const { Logger, injectLambdaContext } = require("@aws-lambda-powertools/logger");
+const { queryItemByIndex } = require("../helpers/dynamo");
 const { buildResponse, errorResponse } = require("../helpers/response");
+const middy = require("@middy/core");
+
+const logger = new Logger({ serviceName: process.env.AWS_LAMBDA_FUNCTION_NAME });
 const TableName = process.env.DYNAMODB_TABLE;
+const IndexName = "category-gsi";
 
 const handler = async (event) => {
-    try {
-        const id = event.pathParameters?.id;
+  try {
+    const categoryId = event.pathParameters?.category_id;
+    const queryInput = {
+      TableName,
+      IndexName,
+      KeyConditionExpression: 'category = :category',
+      ExpressionAttributeValues: {
+        ':category': categoryId
+      },
+      ProjectionExpression: 'mealId, seller'
+    };
 
-        if (!id) {
-            throw { statusCode: 400, message: "invalid param" };
-        }
+    const ddbRes = await queryItemByIndex(queryInput);
+    if (!ddbRes.Items)
+      throw {
+        statusCode: 400,
+        message: "Item not found"
+      };
 
-        const keySchema = {"PK":"mealId"};
-
-        let Item = {
-            [keySchema.PK]: id
-        };
-
-        const ddbRes = await getItem(TableName, Item);
-
-        if (!ddbRes.Item)
-            throw {
-                statusCode: 400,
-                message: "Item not found"
-            };
-
-        return buildResponse(200, ddbRes.Item);
-    } catch (error) {
-        return errorResponse(error);
-    }
+    logger.info("Meals by Category", { data: ddbRes.Items})
+    return buildResponse(200, ddbRes.Items);
+  } catch (error) {
+    logger.error("Error getting meals by Category", { error });
+    return errorResponse(error);
+  }
 };
 
-module.exports = { handler };
+module.exports = { handler: middy(handler).use(injectLambdaContext(logger, { logEvent: true })) };

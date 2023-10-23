@@ -5,29 +5,16 @@ const TableName = process.env.DYNAMODB_TABLE;
 const handler = async (event) => {
     try {
         const keySchema = {"PK":"orderId","SK":"orderLineId"};
-        if (event.requestContext.authorizer) {
-            // set primary key value equal to cognito id
-            keySchema.PKV = event.requestContext.authorizer.claims.sub;
-        } else if (event.queryStringParameters) {
-            // if no cognito id, set primary key value equal to query string param e.g. ?userId=xyz
-            keySchema.PKV = event.queryStringParameters[keySchema.PK];
-        } else {
-            throw { statusCode: 400, message: "invalid param" };
-        }
-
-        const id = event.pathParameters?.id;
-
-        if (!id) {
-            throw { statusCode: 400, message: "invalid param" };
-        }
-
+        const orderId = event.pathParameters.order_id;
+        const lineId = event.pathParameters.line_id;
+        
         let Item = {
-            [keySchema.PK]: `USER#${keySchema.PKV}`,
-            [keySchema.SK]: `ITEM#${id}`
+            [keySchema.PK]: orderId,
+            [keySchema.SK]: `LINE#${lineId}`
         };
 
         await deleteItem(TableName, Item);
-        return buildResponse(200, { message: "success" });
+        return buildResponse(200, { message: `Deleted Line ID: ${lineId} from Order ID: ${orderId} successfully` });
     } catch (error) {
         return errorResponse(error);
     }
