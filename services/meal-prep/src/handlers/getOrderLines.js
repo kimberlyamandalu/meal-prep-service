@@ -7,9 +7,6 @@ const handler = async (event) => {
         const keySchema = {"PK":"orderId","SK":"orderLineId"};
         const orderId = event.pathParameters?.order_id;
 
-        let Item = {
-            [keySchema.PK]: orderId
-        };
         const keyConditionExpression = `${keySchema.PK} = :PK AND begins_with(${keySchema.SK}, :SK)`;
         const expressionAttributeValues = { ":PK": orderId, ":SK": "LINE#" }
         const orderLines = await getItemsByPartitionKey(TableName, keyConditionExpression, expressionAttributeValues);

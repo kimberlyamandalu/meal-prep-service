@@ -32,6 +32,7 @@ const handler = async (event) => {
             ":subTotal": subTotal.toFixed(2),
             ":updatedAt": now
         }
+        console.log()
         await updateItem(TableName, Item, updateExpression, expressionAttributeNames, expressionAttributeValues);
         return buildResponse(200, { updatedItem: Item });
     } catch (error) {
