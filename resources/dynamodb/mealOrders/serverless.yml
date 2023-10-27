@@ -22,21 +22,19 @@ resources:
         AttributeDefinitions:
           - AttributeName: orderId
             AttributeType: S
-          - AttributeName: orderItemId
+          - AttributeName: orderLineId
             AttributeType: S
-          - AttributeName: customerId
-            AttributeType: S
-          - AttributeName: orderId
+          - AttributeName: customer
             AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
-          - AttributeName: orderItemId
+          - AttributeName: orderLineId
             KeyType: RANGE
         GlobalSecondaryIndexes:
           - IndexName: customer-gsi
             KeySchema:
-              - AttributeName: customerId
+              - AttributeName: customer
                 KeyType: HASH
               - AttributeName: orderId
                 KeyType: RANGE

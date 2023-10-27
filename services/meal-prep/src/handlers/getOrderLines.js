@@ -1,40 +1,29 @@
-const { getItem } = require("../helpers/dynamo");
+const { getItemsByPartitionKey } = require("../helpers/dynamo");
 const { buildResponse, errorResponse } = require("../helpers/response");
 const TableName = process.env.DYNAMODB_TABLE;
 
 const handler = async (event) => {
     try {
-        const keySchema = {"PK":"orderId","SK":"orderItemId"};
-        if (event.requestContext.authorizer) {
-            // set primary key value equal to cognito id
-            keySchema.PKV = event.requestContext.authorizer.claims.sub;
-        } else if (event.queryStringParameters) {
-            // if no cognito id, set primary key value equal to query string param e.g. ?userId=xyz
-            keySchema.PKV = event.queryStringParameters[keySchema.PK];
-        } else {
-            throw { statusCode: 400, message: "invalid param" };
-        }
+        const keySchema = {"PK":"orderId","SK":"orderLineId"};
+        const orderId = event?.pathParameters?.order_id;
 
-        const id = event.pathParameters?.id;
+        if (!orderId)
+            throw {
+                statusCode: 400,
+                message: "invalid param"
+            }
 
-        if (!id) {
-            throw { statusCode: 400, message: "invalid param" };
-        }
+        const keyConditionExpression = `${keySchema.PK} = :PK AND begins_with(${keySchema.SK}, :SK)`;
+        const expressionAttributeValues = { ":PK": orderId, ":SK": "LINE#" }
+        const orderLines = await getItemsByPartitionKey(TableName, keyConditionExpression, expressionAttributeValues);
 
-        let Item = {
-            [keySchema.PK]: `USER#${keySchema.PKV}`,
-            [keySchema.SK]: `ITEM#${id}`
-        };
-
-        const ddbRes = await getItem(TableName, Item);
-
-        if (!ddbRes.Item)
+        if (!orderLines.Items)
             throw {
                 statusCode: 400,
                 message: "Item not found"
             };
 
-        return buildResponse(200, ddbRes.Item);
+        return buildResponse(200, orderLines.Items);
     } catch (error) {
         return errorResponse(error);
     }

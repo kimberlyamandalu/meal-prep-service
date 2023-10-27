@@ -7,5 +7,5 @@
 			}
 		}
 	},
-	"body": "{\"productName\":\"Off White Sneakers\",\"productPrice\":\"99.00\"}"
+	"body": "{\"customer\":\"Bob\",\"status\":\"InProgress\"}"
 }

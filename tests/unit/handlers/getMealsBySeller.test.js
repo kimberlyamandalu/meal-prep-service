@@ -1,12 +1,12 @@
-const { getItem } = require('../../../services/meal-prep/src/helpers/dynamo')
+const { queryItemByIndex } = require('../../../services/meal-prep/src/helpers/dynamo')
 const {
 	buildResponse,
 	errorResponse
 } = require('../../../services/meal-prep/src/helpers/response')
-const eventJSON = require('../../../events/getItemById.json')
+const eventJSON = require('../../../events/getMealsBySeller.json')
 const {
 	handler
-} = require('../../../services/meal-prep/src/handlers/getItemById')
+} = require('../../../services/meal-prep/src/handlers/getMealsBySeller')
 
 const { describe, it, expect } = require('@jest/globals')
 
@@ -14,47 +14,46 @@ jest.mock('../../../services/meal-prep/src/helpers/dynamo')
 jest.mock('../../../services/meal-prep/src/helpers/response')
 
 const TableName = process.env.DYNAMODB_TABLE
-const keySchema = {"PK":"mealId"}
 
-describe('Test getItemById handler success', () => {
+describe('Test getMealsBySeller handler success', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
-	it('should return a 200 response if item is found', async () => {
-		const id = eventJSON.pathParameters.id
-		const cognitoUserId = eventJSON.requestContext.authorizer.claims.sub
+	it('should return a 200 response ', async () => {
+		const seller = eventJSON.pathParameters.seller
 
-		const Item = {
-			[keySchema.PK]: id
+		const expectedQuery = {
+			TableName,
+			IndexName: expect.any(String),
+			KeyConditionExpression: expect.any(String),
+			ExpressionAttributeValues: {
+				":seller": seller
+			},
+			ProjectionExpression: expect.any(String)
 		}
-		const expectedItem = expect.objectContaining({
-			[keySchema.PK]: id,
-			cognitoUserId,
-			productName: expect.any(String),
-			productPrice: expect.any(String),
-			createdAt: expect.any(String),
-			updatedAt: expect.any(String)
+		const expectedMeals = expect.objectContaining({
+			Items: expect.any(Array)
 		})
 
-		const expectedResponse = buildResponse(200, expectedItem)
+		const expectedResponse = buildResponse(200, expectedMeals)
 
-		getItem.mockResolvedValue({ Item: expectedItem })
+		queryItemByIndex.mockResolvedValue(expectedMeals)
 		buildResponse.mockReturnValue(expectedResponse)
 
 		const result = await handler(eventJSON)
 
-		expect(getItem).toHaveBeenCalledTimes(1)
-		expect(getItem).toHaveBeenCalledWith(TableName, Item)
+		expect(queryItemByIndex).toHaveBeenCalledTimes(1)
+		expect(queryItemByIndex).toHaveBeenCalledWith(expectedQuery)
 		expect(result).toEqual(expectedResponse)
-		expect(buildResponse).toHaveBeenCalledWith(200, expectedItem)
+		expect(buildResponse).toHaveBeenCalledWith(200, expectedMeals)
 	})
 })
 
-describe('Test getItemById handler invalid param', () => {
+describe('Test getMealsBySeller handler invalid param', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
-	it('should return a 400 error response if id is not provided', async () => {
+	it('should return a 400 error response if seller is not provided', async () => {
 		const errorJSON = { pathParameters: {} }
 		const expectedError = { statusCode: 400, message: 'invalid param' }
 
@@ -67,22 +66,23 @@ describe('Test getItemById handler invalid param', () => {
 		expect(result).toEqual(expectedError)
 	})
 })
-describe('Test getItemById handler Item not found', () => {
+
+describe('Test getMealsBySeller handler internal server error', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
-	it('should return a 400 error response if item is not found', async () => {
-		const id = eventJSON.pathParameters.id
-		const expectedError = { statusCode: 400, message: 'Item not found' }
+	it('should return a 500 error response if internal server error', async () => {
+		const expectedError = { statusCode: 500, message: 'Internal Server Error' }
+		const internalServerError = new Error('Internal Server Error')
+		internalServerError.statusCode = 500
 
-		getItem.mockResolvedValue({})
+		queryItemByIndex.mockRejectedValue(internalServerError)
 		errorResponse.mockReturnValue(expectedError)
 
 		const result = await handler(eventJSON)
 
-		expect(getItem).toHaveBeenCalledTimes(1)
-		expect(getItem).toHaveBeenCalledWith(TableName, { [keySchema.PK]: id })
+		expect(errorResponse).toHaveBeenCalledTimes(1)
+		expect(errorResponse).toHaveBeenCalledWith(internalServerError)
 		expect(result).toEqual(expectedError)
-		expect(errorResponse).toHaveBeenCalledWith(expectedError)
 	})
 })

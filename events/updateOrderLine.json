@@ -8,7 +8,8 @@
 		}
 	},
 	"pathParameters": {
-		"id": "1234567"
+		"order_id": "orderId",
+		"line_id": "orderLineToUpdate"
 	},
-	"body": "{\"productDescription\":\"The slickest shoe to grace Middle Earth\",\"productName\":\"Off White Sneakers\",\"productPrice\":\"99.00\"}"
+	"body": "{\"quantity\":\"2\",\"mealId\":\"Meal XYZ\",\"price\":\"9.50\"}"
 }

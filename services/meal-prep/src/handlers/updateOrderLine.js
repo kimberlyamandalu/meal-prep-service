@@ -1,39 +1,46 @@
-const { putItem } = require("../helpers/dynamo");
+const { updateItem } = require("../helpers/dynamo");
 const { buildResponse, errorResponse } = require("../helpers/response");
 const TableName = process.env.DYNAMODB_TABLE;
 
 const handler = async (event) => {
     try {
-        const keySchema = {"PK":"orderId","SK":"orderItemId"};
-        if (event.requestContext.authorizer) {
-            // set primary key value equal to cognito id
-            keySchema.PKV = event.requestContext.authorizer.claims.sub;
-        } else if (event.queryStringParameters) {
-            // if no cognito id, set primary key value equal to query string param e.g. ?userId=xyz
-            keySchema.PKV = event.queryStringParameters[keySchema.PK];
-        } else {
-            throw { statusCode: 400, message: "invalid param" };
-        }
+        const keySchema = {"PK":"orderId","SK":"orderLineId"};
+        const orderId = event?.pathParameters?.order_id;
+        const lineId = event?.pathParameters?.line_id;
 
-        const id = event.pathParameters?.id;
+        if (!orderId || !lineId)
+            throw {
+                statusCode: 400,
+                message: "invalid param"
+            }
 
         const now = new Date().toISOString();
-
-        if (!id) {
-            throw { statusCode: 400, message: "invalid param" };
-        }
-
-        const item = JSON.parse(event.body);
-
+        const order = JSON.parse(event.body);
+        const subTotal = parseFloat(order.price) * parseFloat(order.quantity);
+        
         let Item = {
-            [keySchema.PK]: `USER#${keySchema.PKV}`,
-            [keySchema.SK]: `ITEM#${id}`,
-            ...item,
-            updatedAt: now
+            [keySchema.PK]: orderId,
+            [keySchema.SK]: `LINE#${lineId}`
         };
 
-        await putItem(TableName, Item);
-        return buildResponse(200, { message: "success" });
+        const updateExpression = "SET #mealId = :mealId, #quantity = :quantity, #price = :price, #subTotal = :subTotal, #updatedAt = :updatedAt";
+        const expressionAttributeNames = {
+            "#mealId": "mealId",
+            "#quantity": "quantity",
+            "#price": "price",
+            "#subTotal": "subTotal",
+            "#updatedAt": "updatedAt"
+        };
+        const expressionAttributeValues = {
+            ":mealId": order.mealId,
+            ":quantity": order.quantity,
+            ":price": order.price,
+            ":subTotal": subTotal.toFixed(2),
+            ":updatedAt": now
+        }
+
+        await updateItem(TableName, Item, updateExpression, expressionAttributeNames, expressionAttributeValues);
+        return buildResponse(200, { updatedItem: Item });
     } catch (error) {
         return errorResponse(error);
     }

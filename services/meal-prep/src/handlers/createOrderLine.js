@@ -4,28 +4,27 @@ const { buildResponse, errorResponse } = require("../helpers/response");
 const TableName = process.env.DYNAMODB_TABLE;
 const handler = async (event) => {
     try {
-        const keySchema = {"PK":"orderId","SK":"orderItemId"};
-        if (event.requestContext.authorizer) {
-            // set primary key value equal to cognito id
-            keySchema.PKV = event.requestContext.authorizer.claims.sub;
-        } else if (event.queryStringParameters) {
-            // if no cognito id, set primary key value equal to query string param e.g. ?userId=xyz
-            keySchema.PKV = event.queryStringParameters[keySchema.PK];
-        } else {
-            throw { statusCode: 400, message: "invalid param" };
-        }
+        const cognitoUserId = event?.requestContext?.authorizer?.claims?.sub;
+        const keySchema = {"PK":"orderId","SK":"orderLineId"};
+        const orderId = event.pathParameters.order_id;
 
-        const item = JSON.parse(event.body);
-        const id = randomUUID();
+        const order = JSON.parse(event.body);
+        const lineId = randomUUID();
         const now = new Date().toISOString();
+        const linePrice = parseFloat(order.price) * parseInt(order.quantity);
+        console.log(`linePrice: ${linePrice}`);
 
         let Item = {
-            [keySchema.PK]: `USER#${keySchema.PKV}`,
-            [keySchema.SK]: `ITEM#${id}`,
-            ...item,
+            [keySchema.PK]: orderId,
+            [keySchema.SK]: `LINE#${lineId}`,
+            ...order,
+            subTotal: linePrice.toString(),
             createdAt: now,
             updatedAt: now
         };
+
+        if (cognitoUserId)
+            Item.cognitoUserId = cognitoUserId;
 
         await putItem(TableName, Item);
         return buildResponse(201, Item);

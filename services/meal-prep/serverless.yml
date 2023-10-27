@@ -13,6 +13,8 @@ provider:
     restApiRootResourceId: ${param:API_GATEWAY_REST_API_ROOT_RESOURCE_ID}
   tracing:
     lambda: true
+  environment:
+    NODE_OPTIONS: --enable-source-maps
 custom:
   base: ${self:service}-${self:provider.stage}
   defaults: ${file(../../defaults/cloudgto.yml):defaults}
@@ -97,6 +99,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:GetItem
+          - dynamodb:Query
           - dynamodb:UpdateItem
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALORDERS}
@@ -324,7 +327,9 @@ functions:
           - dynamodb:Query
           - dynamodb:BatchGetItem
           - dynamodb:DescribeTable
-        Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}
+        Resource: 
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}/index/category-gsi
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -355,7 +360,9 @@ functions:
           - dynamodb:Query
           - dynamodb:BatchGetItem
           - dynamodb:DescribeTable
-        Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}
+        Resource: 
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}
+          - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${param:DYNAMODB_TABLE_MEALSMENU}/index/seller-gsi
       - Effect: Allow
         Action:
           - xray:PutTraceSegments

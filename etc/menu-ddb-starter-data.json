@@ -1,0 +1,94 @@
+{
+  "meal-prep-ddb-mealsMenu-dev-mealsMenu": [
+      {
+          "PutRequest": {
+              "Item": {
+                  "mealId": {"S": "YesMeal A"},
+                  "category": {"S": "Chicken"},
+                  "seller": {"S": "YesMeal"},
+                  "price": {"S": "8.89"}
+              }
+          }
+      },
+      {
+          "PutRequest": {
+              "Item": {
+                "mealId": {"S": "YesMeal B"},
+                "category": {"S": "Pork"},
+                "seller": {"S": "YesMeal"},
+                "price": {"S": "9.89"}
+              }
+          }
+      },
+      {
+          "PutRequest": {
+              "Item": {
+                "mealId": {"S": "YesMeal C"},
+                "category": {"S": "Vegetable"},
+                "seller": {"S": "YesMeal"},
+                "price": {"S": "8.50"}
+              }
+          }
+      },
+      {
+        "PutRequest": {
+            "Item": {
+                "mealId": {"S": "Seafood A"},
+                "category": {"S": "Pork"},
+                "seller": {"S": "Seafood"},
+                "price": {"S": "10.89"}
+            }
+        }
+    },
+    {
+        "PutRequest": {
+            "Item": {
+              "mealId": {"S": "Seafood B"},
+              "category": {"S": "Pork"},
+              "seller": {"S": "Seafood"},
+              "price": {"S": "11.89"}
+            }
+        }
+    },
+    {
+        "PutRequest": {
+            "Item": {
+              "mealId": {"S": "Seafood C"},
+              "category": {"S": "Vegetable"},
+              "seller": {"S": "Seafood"},
+              "price": {"S": "12.50"}
+            }
+        }
+    },
+    {
+      "PutRequest": {
+          "Item": {
+              "mealId": {"S": "A1 A"},
+              "category": {"S": "Chicken"},
+              "seller": {"S": "A1"},
+              "price": {"S": "8.89"}
+          }
+      }
+  },
+  {
+      "PutRequest": {
+          "Item": {
+            "mealId": {"S": "A1 B"},
+            "category": {"S": "Pork"},
+            "seller": {"S": "A1"},
+            "price": {"S": "9.89"}
+          }
+      }
+  },
+  {
+      "PutRequest": {
+          "Item": {
+            "mealId": {"S": "A1 C"},
+            "category": {"S": "Vegetable"},
+            "seller": {"S": "A1"},
+            "price": {"S": "8.50"}
+          }
+      }
+  }
+  ]
+}
