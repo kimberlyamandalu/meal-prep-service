@@ -9,7 +9,14 @@ const IndexName = "seller-gsi"
 
 const handler = async (event) => {
     try {
-        const seller = event.pathParameters?.seller;
+        const seller = event?.pathParameters?.seller;
+
+        if (!seller)
+          throw {
+            statusCode: 400,
+            message: "invalid param"
+          }
+          
         const queryInput = {
           TableName,
           IndexName,

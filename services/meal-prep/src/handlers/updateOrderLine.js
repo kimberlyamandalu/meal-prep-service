@@ -5,10 +5,16 @@ const TableName = process.env.DYNAMODB_TABLE;
 const handler = async (event) => {
     try {
         const keySchema = {"PK":"orderId","SK":"orderLineId"};
-        const orderId = event.pathParameters?.order_id;
-        const lineId = event.pathParameters?.line_id;
-        const now = new Date().toISOString();
+        const orderId = event?.pathParameters?.order_id;
+        const lineId = event?.pathParameters?.line_id;
 
+        if (!orderId || !lineId)
+            throw {
+                statusCode: 400,
+                message: "invalid param"
+            }
+
+        const now = new Date().toISOString();
         const order = JSON.parse(event.body);
         const subTotal = parseFloat(order.price) * parseFloat(order.quantity);
         
@@ -32,7 +38,7 @@ const handler = async (event) => {
             ":subTotal": subTotal.toFixed(2),
             ":updatedAt": now
         }
-        console.log()
+
         await updateItem(TableName, Item, updateExpression, expressionAttributeNames, expressionAttributeValues);
         return buildResponse(200, { updatedItem: Item });
     } catch (error) {

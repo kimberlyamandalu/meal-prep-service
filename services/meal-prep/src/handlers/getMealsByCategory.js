@@ -9,7 +9,14 @@ const IndexName = "category-gsi";
 
 const handler = async (event) => {
   try {
-    const categoryId = event.pathParameters?.category_id;
+    const categoryId = event?.pathParameters?.category_id;
+
+    if (!categoryId)
+      throw {
+        statusCode: 400,
+        message: "invalid param"
+      }
+
     const queryInput = {
       TableName,
       IndexName,

@@ -5,9 +5,15 @@ const TableName = process.env.DYNAMODB_TABLE;
 const handler = async (event) => {
     try {
         const keySchema = {"PK":"orderId","SK":"orderLineId"};
-        const orderId = event.pathParameters.order_id;
-        const lineId = event.pathParameters.line_id;
+        const orderId = event?.pathParameters?.order_id;
+        const lineId = event?.pathParameters?.line_id;
         
+        if (!orderId || !lineId)
+            throw {
+                statusCode: 400,
+                message: "invalid param"
+            }
+
         let Item = {
             [keySchema.PK]: orderId,
             [keySchema.SK]: `LINE#${lineId}`

@@ -7,6 +7,13 @@ const handler = async (event) => {
         const cognitoUserId = event?.requestContext?.authorizer?.claims?.sub;
         const keySchema = {"PK":"orderId","SK":"orderLineId"};
         const orderId = event.pathParameters?.order_id;
+
+        if (!orderId)
+            throw {
+                statusCode: 400,
+                message: "invalid param"
+            }
+
         const now = new Date().toISOString();
 
         const order = JSON.parse(event.body);
