@@ -1,13 +1,7 @@
 {
 	"httpMethod": "GET",
-	"requestContext": {
-		"authorizer": {
-			"claims": {
-				"sub": "1234abcd"
-			}
-		}
-	},
+	"requestContext": {},
 	"pathParameters": {
-		"id": "123456789"
+		"category_id": "mealCategory"
 	}
 }

@@ -8,7 +8,7 @@
 		}
 	},
 	"pathParameters": {
-		"id": "1234567"
+		"order_id": "orderId"
 	},
-	"body": "{\"productDescription\":\"The slickest shoe to grace Middle Earth\",\"productName\":\"Off White Sneakers\",\"productPrice\":\"99.00\"}"
+	"body": "{\"status\":\"InProgress\"}"
 }

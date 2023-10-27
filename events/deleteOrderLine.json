@@ -8,6 +8,7 @@
 		}
 	},
 	"pathParameters": {
-		"id": "XXXXXXXREPLACE_WITH_REAL_VALUEXXXXXXX"
+		"order_id": "orderHeader",
+		"line_id": "orderLineToBeDeleted"
 	}
 }
