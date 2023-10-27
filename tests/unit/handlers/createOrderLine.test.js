@@ -5,10 +5,10 @@ const {
 	buildResponse,
 	errorResponse
 } = require('../../../services/meal-prep/src/helpers/response')
-const eventJSON = require('../../../events/createItemById.json')
+const eventJSON = require('../../../events/createOrderLine.json')
 const {
 	handler
-} = require('../../../services/meal-prep/src/handlers/createItemById')
+} = require('../../../services/meal-prep/src/handlers/createOrderLine')
 
 const { describe, it, expect } = require('@jest/globals')
 
@@ -18,39 +18,39 @@ const keySchema = {"PK":"orderId","SK":"orderLineId"}
 jest.mock('../../../services/meal-prep/src/helpers/dynamo')
 jest.mock('../../../services/meal-prep/src/helpers/response')
 
-describe('Test createItemById handler success', () => {
+describe('Test createOrderLine handler success', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
 
-	it('should return a 201 response when an item is created', async () => {
-		const item = JSON.parse(eventJSON.body)
+	it('should return a 201 response when an order line is created', async () => {
+		const orderLine = JSON.parse(eventJSON.body)
 		keySchema.PKV = eventJSON.requestContext.authorizer.claims.sub
 
-		const expectedItem = expect.objectContaining({
-			...item,
+		const expectedOrderLine = expect.objectContaining({
+			...orderLine,
+			subTotal: (parseFloat(orderLine.price) * parseInt(orderLine.quantity)).toFixed(2),
 			[keySchema.PK]: expect.any(String),
 			[keySchema.SK]: expect.any(String),
 			createdAt: expect.any(String),
 			updatedAt: expect.any(String)
 		})
 
-		const expectedResponse = buildResponse(201, expectedItem)
+		const expectedResponse = buildResponse(201, expectedOrderLine)
 
 		putItem.mockResolvedValueOnce({})
-
 		buildResponse.mockReturnValue(expectedResponse)
 
 		const result = await handler(eventJSON)
 
 		expect(putItem).toHaveBeenCalledTimes(1)
-		expect(putItem).toHaveBeenCalledWith(TableName, expectedItem)
+		expect(putItem).toHaveBeenCalledWith(TableName, expectedOrderLine)
 		expect(result).toEqual(expectedResponse)
-		expect(buildResponse).toHaveBeenCalledWith(201, expectedItem)
+		expect(buildResponse).toHaveBeenCalledWith(201, expectedOrderLine)
 	})
 })
 
-describe('Test createItemById handler invalid param', () => {
+describe('Test createOrderLine handler invalid param', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
@@ -58,7 +58,10 @@ describe('Test createItemById handler invalid param', () => {
 	it('should return a 400 response when there is no Secondary Key', async () => {
 		const errorJSON = {
 			body: JSON.stringify({}),
-			requestContext: {}
+			requestContext: {},
+			pathParameters: {
+				order_id: "errorOrder"
+			}
 		}
 		const error = new Error('invalid param')
 		error.statusCode = 400
@@ -69,17 +72,15 @@ describe('Test createItemById handler invalid param', () => {
 		})
 
 		putItem.mockRejectedValueOnce(error)
+		
 		const result = await handler(errorJSON)
 
-		expect(errorResponse).toHaveBeenCalledWith({
-			statusCode: error.statusCode,
-			message: error.message
-		})
+		expect(errorResponse).toHaveBeenCalledWith(error)
 		expect(result).toEqual(errorResponse(error))
 	})
 })
 
-describe('Test createItemById handler server error', () => {
+describe('Test createOrderLine handler server error', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})

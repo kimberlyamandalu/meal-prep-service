@@ -5,10 +5,10 @@ const {
 	buildResponse,
 	errorResponse
 } = require('../../../services/meal-prep/src/helpers/response')
-const eventJSON = require('../../../events/updateItemById.json')
+const eventJSON = require('../../../events/updateOrder.json')
 const {
 	handler
-} = require('../../../services/meal-prep/src/handlers/updateItemById')
+} = require('../../../services/meal-prep/src/handlers/updateOrder')
 
 const { describe, it, expect } = require('@jest/globals')
 
@@ -17,44 +17,47 @@ jest.mock('../../../services/meal-prep/src/helpers/response')
 
 const TableName = process.env.DYNAMODB_TABLE
 const keySchema = {"PK":"orderId","SK":"orderLineId"}
-describe('Test updateItemById handler success', () => {
+
+describe('Test updateOrder handler success', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
 
-	it('should return a 200 success response if an item is updated', async () => {
+	it('should return a 200 success response if an order is updated', async () => {
 		const body = JSON.parse(eventJSON.body)
-		const id = eventJSON.pathParameters?.id
+		const orderId = eventJSON.pathParameters?.order_id
 		keySchema.PKV = eventJSON.requestContext.authorizer.claims.sub
 
 		const expectedItem = expect.objectContaining({
 			...body,
-			[keySchema.PK]: `USER#${keySchema.PKV}`,
-			[keySchema.SK]: `ITEM#${id}`,
+			[keySchema.PK]: orderId,
+			[keySchema.SK]: "HEADER",
 			updatedAt: expect.any(String)
 		})
 
 		const expectedResponse = buildResponse(200, expectedItem)
+
 		putItem.mockResolvedValueOnce({})
 		buildResponse.mockReturnValue(expectedResponse)
+		
 		const result = await handler(eventJSON)
+		
 		expect(result).toEqual(expectedResponse)
 		expect(buildResponse).toHaveBeenCalledWith(200, expectedItem)
 	})
 })
 
-describe('Test updateItemById handler invalid param', () => {
+describe('Test updateOrder handler invalid param', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
 
-	it('should return a 400 response when id is not provided', async () => {
+	it('should return a 400 response when order_id is not provided', async () => {
 		const errorJSON = JSON.parse(JSON.stringify(eventJSON))
 		errorJSON.pathParameters = {}
 
 		const expectedError = { statusCode: 400, message: 'invalid param' }
 
-		putItem.mockRejectedValue(expectedError)
 		errorResponse.mockReturnValue(expectedError)
 
 		const result = await handler(errorJSON)
@@ -64,7 +67,7 @@ describe('Test updateItemById handler invalid param', () => {
 	})
 })
 
-describe('Test updateItemById handler server error', () => {
+describe('Test updateOrder handler server error', () => {
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
